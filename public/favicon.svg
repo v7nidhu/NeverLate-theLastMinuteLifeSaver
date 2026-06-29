@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <!-- Background Squircle with iOS-style organic curves -->
+  <rect width="512" height="512" rx="120" fill="#d5befa" />
+
+  <!-- Subtle flat shadow underneath the main composition -->
+  <rect x="175" y="420" width="162" height="6" rx="3" fill="#38125c" opacity="0.2" />
+
+  <!-- ==================== CLOCK (Back Layer) ==================== -->
+  <g id="clock-group">
+    <!-- Horizontal Speed/Motion Lines emerging from the left of the clock face -->
+    <!-- Small detached pill at top left -->
+    <line x1="58" y1="192" x2="76" y2="192" stroke="#38125c" stroke-width="16" stroke-linecap="round" />
+    <!-- 5 Main motion lines -->
+    <line x1="110" y1="165" x2="160" y2="165" stroke="#38125c" stroke-width="20" stroke-linecap="round" />
+    <line x1="80" y1="200" x2="160" y2="200" stroke="#38125c" stroke-width="20" stroke-linecap="round" />
+    <line x1="40" y1="235" x2="160" y2="235" stroke="#38125c" stroke-width="20" stroke-linecap="round" />
+    <line x1="72" y1="270" x2="160" y2="270" stroke="#38125c" stroke-width="20" stroke-linecap="round" />
+    <line x1="100" y1="305" x2="160" y2="305" stroke="#38125c" stroke-width="20" stroke-linecap="round" />
+
+    <!-- Clock Outer Dial (Thick dark border) -->
+    <circle cx="260" cy="220" r="128" fill="none" stroke="#38125c" stroke-width="20" />
+
+    <!-- Clock Ticks (12, 1, 2, 3, 4, 5, 7, 8, 9, 10, 11 o'clock - 6 is covered by calendar) -->
+    <line x1="260" y1="108" x2="260" y2="128" stroke="#38125c" stroke-width="10" stroke-linecap="round" />
+    <line x1="316" y1="123" x2="306" y2="140" stroke="#38125c" stroke-width="10" stroke-linecap="round" />
+    <line x1="357" y1="164" x2="340" y2="174" stroke="#38125c" stroke-width="10" stroke-linecap="round" />
+    <line x1="372" y1="220" x2="352" y2="220" stroke="#38125c" stroke-width="10" stroke-linecap="round" />
+    <line x1="357" y1="276" x2="340" y2="266" stroke="#38125c" stroke-width="10" stroke-linecap="round" />
+    <line x1="316" y1="317" x2="306" y2="300" stroke="#38125c" stroke-width="10" stroke-linecap="round" />
+    <!-- Ticks on the left (Speed line side) -->
+    <line x1="204" y1="317" x2="214" y2="300" stroke="#38125c" stroke-width="10" stroke-linecap="round" />
+    <line x1="163" y1="276" x2="180" y2="266" stroke="#38125c" stroke-width="10" stroke-linecap="round" />
+    <line x1="148" y1="220" x2="168" y2="220" stroke="#38125c" stroke-width="10" stroke-linecap="round" />
+    <line x1="163" y1="164" x2="180" y2="174" stroke="#38125c" stroke-width="10" stroke-linecap="round" />
+    <line x1="204" y1="123" x2="214" y2="140" stroke="#38125c" stroke-width="10" stroke-linecap="round" />
+
+    <!-- Clock Hands (Thick rounded hands aligned dynamically) -->
+    <!-- Hour Hand pointing down-left -->
+    <line x1="260" y1="220" x2="210" y2="270" stroke="#38125c" stroke-width="18" stroke-linecap="round" />
+    <!-- Minute Hand pointing up-right -->
+    <line x1="260" y1="220" x2="340" y2="160" stroke="#38125c" stroke-width="18" stroke-linecap="round" />
+    <!-- Center Hub Pin -->
+    <circle cx="260" cy="220" r="16" fill="#38125c" />
+  </g>
+
+  <!-- ==================== CALENDAR (Middle Layer) ==================== -->
+  <g id="calendar-group">
+    <!-- Main Calendar Dark Container -->
+    <rect x="250" y="248" width="165" height="152" rx="20" fill="#38125c" />
+    <!-- Inner Lavender Display Cutout -->
+    <rect x="264" y="286" width="137" height="100" rx="10" fill="#d5befa" />
+
+    <!-- Binder Loops at top of calendar -->
+    <rect x="278" y="234" width="20" height="40" rx="10" fill="none" stroke="#38125c" stroke-width="10" />
+    <rect x="362" y="234" width="20" height="40" rx="10" fill="none" stroke="#38125c" stroke-width="10" />
+
+    <!-- Grid Items Inside Calendar Cutout -->
+    <!-- Row 1: 4 Filled Squares -->
+    <rect x="274" y="300" width="20" height="20" rx="4" fill="#38125c" />
+    <rect x="304" y="300" width="20" height="20" rx="4" fill="#38125c" />
+    <rect x="334" y="300" width="20" height="20" rx="4" fill="#38125c" />
+    <rect x="364" y="300" width="20" height="20" rx="4" fill="#38125c" />
+
+    <!-- Row 2: 1 Square, 1 Checkmark (others covered by target) -->
+    <rect x="274" y="330" width="20" height="20" rx="4" fill="#38125c" />
+    <path d="M303 338 L309 344 L321 332" stroke="#38125c" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+
+    <!-- Row 3: 2 Squares (others covered by target) -->
+    <rect x="274" y="360" width="20" height="20" rx="4" fill="#38125c" />
+    <rect x="304" y="360" width="20" height="20" rx="4" fill="#38125c" />
+  </g>
+
+  <!-- ==================== TARGET & BULLSEYE (Front Layer) ==================== -->
+  <g id="target-group">
+    <!-- Solid Lavender Halo Mask to cleanly separate target from calendar background -->
+    <circle cx="374" cy="364" r="58" fill="#d5befa" />
+
+    <!-- Outer Target Ring -->
+    <circle cx="374" cy="364" r="44" fill="none" stroke="#38125c" stroke-width="12" />
+    <!-- Inner Target Ring -->
+    <circle cx="374" cy="364" r="24" fill="none" stroke="#38125c" stroke-width="8" />
+    <!-- Center Bullseye Pin -->
+    <circle cx="374" cy="364" r="8" fill="#38125c" />
+
+    <!-- Target Arrow flying from top-right into the bullseye -->
+    <!-- Arrow Shaft -->
+    <line x1="430" y1="308" x2="384" y2="354" stroke="#38125c" stroke-width="10" stroke-linecap="round" />
+    <!-- Arrow Fletching / Feathers at top-right end -->
+    <line x1="418" y1="320" x2="432" y2="306" stroke="#38125c" stroke-width="8" stroke-linecap="round" />
+    <line x1="424" y1="314" x2="438" y2="300" stroke="#38125c" stroke-width="8" stroke-linecap="round" />
+  </g>
+</svg>

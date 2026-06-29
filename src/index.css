@@ -1,0 +1,172 @@
+/* File: src/index.css */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Courier New", Courier, ui-monospace, SFMono-Regular, monospace;
+}
+
+
+/* Force all fonts to render zero as clean, open ovals/circles without internal slash/dots */
+*, *::before, *::after {
+  font-variant-numeric: normal !important;
+  font-feature-settings: "zero" 0, "onum" 0, "ordn" 0 !important;
+}
+
+/* Global Font Color Theme Override - light text in dark theme, dark text in light theme */
+html.dark :is(p, span, h1, h2, h3, h4, h5, h6, label, li, div, button, input, textarea, select, a):not([class*="text-red"]):not([class*="text-purple"]):not([class*="text-pink"]):not([class*="text-amber"]):not([class*="text-emerald"]):not([class*="text-green"]):not([class*="text-blue"]):not([class*="text-indigo"]):not([class*="text-white"]) {
+  color: #F3F1FA !important;
+}
+
+html.light :is(p, span, h1, h2, h3, h4, h5, h6, label, li, div, button, input, textarea, select, a):not([class*="text-red"]):not([class*="text-purple"]):not([class*="text-pink"]):not([class*="text-amber"]):not([class*="text-emerald"]):not([class*="text-green"]):not([class*="text-blue"]):not([class*="text-indigo"]):not([class*="text-white"]) {
+  color: #1F1235 !important;
+}
+
+/* Premium SaaS Glassmorphism and Theme Overrides */
+.glass-card {
+  background: rgba(255, 255, 255, 0.035) !important;
+  backdrop-filter: blur(24px) !important;
+  -webkit-backdrop-filter: blur(24px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 10px 40px rgba(0, 0, 0, 0.45) !important;
+}
+
+.premium-btn-primary {
+  background: linear-gradient(135deg, #8E5FFF, #A970FF) !important;
+  box-shadow: 0 10px 30px rgba(142, 95, 255, 0.45) !important;
+  color: #FFFFFF !important;
+  border: none !important;
+  transition: all 0.25s ease-in-out !important;
+}
+
+.premium-btn-primary:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.1);
+  box-shadow: 0 12px 35px rgba(142, 95, 255, 0.55) !important;
+}
+
+.premium-btn-secondary {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: #D7D0F8 !important;
+  transition: all 0.25s ease-in-out !important;
+}
+
+.premium-btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  transform: translateY(-2px);
+}
+
+/* Custom Scrollbars */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 5px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(147, 51, 234, 0.2);
+  border-radius: 99px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(147, 51, 234, 0.4);
+}
+
+/* Hide scrollbar globally */
+html, body, .overflow-y-auto {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+html::-webkit-scrollbar, body::-webkit-scrollbar, .overflow-y-auto::-webkit-scrollbar {
+  display: none;
+}
+
+/* FullCalendar Custom Theme Adjustments */
+.fc {
+  font-family: "Inter", sans-serif !important;
+}
+.fc .fc-toolbar-title {
+  font-size: 0.9rem !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.025em;
+}
+.fc .fc-button {
+  background-color: #C27AFF !important;
+  border-color: #C27AFF !important;
+  color: #ffffff !important;
+  font-size: 0.65rem !important;
+  padding: 0.3rem 0.6rem !important;
+  border-radius: 0.5rem !important;
+  text-transform: uppercase !important;
+  font-weight: 700 !important;
+}
+.fc .fc-button:hover {
+  background-color: #b05cff !important;
+  border-color: #b05cff !important;
+}
+.fc .fc-button-primary:disabled {
+  background-color: rgba(194, 122, 255, 0.3) !important;
+  border-color: rgba(194, 122, 255, 0.3) !important;
+  opacity: 0.6;
+}
+.fc-theme-standard td, .fc-theme-standard th {
+  border-color: rgba(147, 51, 234, 0.1) !important;
+}
+.fc .fc-col-header-cell-cushion {
+  font-size: 0.65rem !important;
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: #a855f7;
+}
+.fc .fc-daygrid-day-number {
+  font-size: 0.8rem !important;
+  font-family: "Courier Prime", monospace;
+  padding: 4px !important;
+}
+.fc-day-today {
+  background-color: rgba(147, 51, 234, 0.05) !important;
+}
+.fc-event {
+  font-size: 0.65rem !important;
+  padding: 1px 3px !important;
+  border-radius: 4px !important;
+  margin: 1px 0 !important;
+  cursor: pointer;
+}
+
+/* Ensure that in light mode, dark or unstyled borders are beautifully rendered in light gray */
+
+html.light :is(div, button, input, textarea, select, a, span, section, main, header, footer, [id])[class*="border"]:not([class*="border-transparent"]):not([class*="border-pink"]):not([class*="border-emerald"]):not([class*="border-red"]):not([class*="border-white"]) {
+  border-color: #e5e7eb !important; /* gray-200 */
+}
+
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(1) > div:nth-of-type(2) > button:nth-of-type(1) {
+  color: #ffffff;
+  font-size: 10px;
+}
+
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > label:nth-of-type(1) {
+  font-size: 12px;
+}
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2) > label:nth-of-type(1) {
+  font-size: 12px;
+}
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(3) > label:nth-of-type(1) {
+  font-size: 11px;
+}
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > p:nth-of-type(1) {
+  font-size: 14px;
+}
+
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3) > button:nth-of-type(1) {
+  color: #ffffff;
+  font-size: 10px;
+}
+
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(1) > div:nth-of-type(2) > button:nth-of-type(1) > span:nth-of-type(1) {
+  color: #ffffff;
+}

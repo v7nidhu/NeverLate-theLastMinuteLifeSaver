@@ -1,0 +1,8 @@
+{
+  "name": "NeverLate",
+  "description": "NeverLate – The Last Minute Life Saver",
+  "requestFramePermissions": [
+    "microphone"
+  ],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
