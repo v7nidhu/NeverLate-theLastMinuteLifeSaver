@@ -172,8 +172,8 @@ export default function App() {
   useEffect(() => {
     const handleGoogleMessage = async (event: MessageEvent) => {
       if (event.data && event.data.type === 'OAUTH_GOOGLE_SUCCESS') {
-        const { email, name, picture } = event.data;
-        await socialLogin(email, name, name.split(' ')[0], picture);
+        const { email, name } = event.data;
+        await socialLogin(email, name, name.split(' ')[0], '');
         showCustomToast("Google Sign-In", `Welcome back, ${name}! Your cloud backup has been restored.`);
         setShowGoogleModal(false);
       }
@@ -479,7 +479,7 @@ export default function App() {
   };
 
   const handleGoogleLogin = () => {
-    socialLogin('nidhiverma777777@gmail.com', 'Nidhi Verma', 'Nidh', 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80');
+    socialLogin('nidhiverma777777@gmail.com', 'Nidhi Verma', 'Nidh', '');
     setShowGoogleModal(false);
   };
 

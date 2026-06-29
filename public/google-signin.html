@@ -31,9 +31,11 @@
     <!-- Account list -->
     <div id="account-list" class="space-y-1.5 flex-1">
       <!-- Default User Account Option -->
-      <button onclick="selectAccount('nidhiverma777777@gmail.com', 'Nidhi Verma', 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop')" class="w-full text-left p-4 rounded-xl hover:bg-gray-100/80 transition-colors flex items-center justify-between group">
+      <button onclick="selectAccount('nidhiverma777777@gmail.com', 'Nidhi Verma', '')" class="w-full text-left p-4 rounded-xl hover:bg-gray-100/80 transition-colors flex items-center justify-between group">
         <div class="flex items-center gap-3.5">
-          <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop" alt="Avatar" class="w-8 h-8 rounded-full object-cover">
+          <div class="w-8 h-8 rounded-full bg-purple-100 border border-purple-300 flex items-center justify-center font-bold text-sm text-purple-800 font-mono">
+            N
+          </div>
           <div>
             <div class="text-sm font-semibold text-gray-800">Nidhi Verma</div>
             <div class="text-xs text-gray-500">nidhiverma777777@gmail.com</div>
@@ -132,10 +134,8 @@
         return;
       }
       const displayName = name || email.split('@')[0];
-      const initials = displayName.substring(0, 2).toUpperCase();
-      const mockAvatar = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(displayName)}`;
 
-      selectAccount(email, displayName, mockAvatar);
+      selectAccount(email, displayName, '');
     }
   </script>
 </body>
