@@ -190,6 +190,19 @@ export const useAppStore = create<AppState>((set, get) => {
       }
       const finalKey = (scoped && user) ? `${key}_${user.displayName}` : key;
       localStorage.setItem(finalKey, JSON.stringify(val));
+
+      // Asynchronously back up to the server
+      if (scoped && user && user.email) {
+        fetch('/api/user/save', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: user.email,
+            key: key,
+            data: val
+          })
+        }).catch(err => console.warn('[NeverLate] Sync backup failed:', err));
+      }
     }
   };
 
@@ -222,17 +235,37 @@ export const useAppStore = create<AppState>((set, get) => {
 
     updateProfile: (profile) => set((state) => {
       if (!state.currentUser) return {};
+      const oldName = state.currentUser.displayName;
+      const newName = profile.displayName;
+      
+      if (oldName !== newName && isClient) {
+        const keysToMigrate = ['nl_tasks', 'nl_habits', 'nl_reports', 'nl_chat', 'nl_chat_sessions', 'nl_active_session_id', 'nl_total_focus_hours'];
+        keysToMigrate.forEach(k => {
+          const val = localStorage.getItem(`${k}_${oldName}`);
+          if (val !== null) {
+            localStorage.setItem(`${k}_${newName}`, val);
+            localStorage.removeItem(`${k}_${oldName}`);
+          }
+        });
+      }
+
       const updatedUser = {
         ...state.currentUser,
         displayName: profile.displayName,
         nickname: profile.nickname,
         profilePicture: profile.profilePicture
       };
-      saveLocal('nl_user', updatedUser);
+      saveLocal('nl_user', updatedUser, false);
+      
+      const allUsers = getLocal('nl_all_users', [], false);
+      const updatedAllUsers = allUsers.map((u: any) => u.email === updatedUser.email ? { ...u, ...profile } : u);
+      saveLocal('nl_all_users', updatedAllUsers, false);
+
       return { currentUser: updatedUser };
     }),
 
-    socialLogin: (email, name, nickname, profilePicture) => {
+    socialLogin: async (email, name, nickname, profilePicture) => {
+      set({ isLoading: true });
       const user = { 
         uid: 'user-' + Date.now(), 
         email, 
@@ -242,33 +275,139 @@ export const useAppStore = create<AppState>((set, get) => {
         xp: 120, 
         level: 1 
       };
-      set({ currentUser: user });
-      saveLocal('nl_user', user);
+
+      // Try fetching backup data from the server first
+      let backupData: any = {};
+      try {
+        const response = await fetch(`/api/user/data?email=${encodeURIComponent(email)}`);
+        if (response.ok) {
+          backupData = await response.json();
+          console.log('[NeverLate] Successfully loaded cloud backup for:', email, backupData);
+        }
+      } catch (err) {
+        console.warn('[NeverLate] Could not load cloud backup:', err);
+      }
+
+      const displayName = name;
+
+      // Populate localStorage with restored cloud items
+      const keysToSync = [
+        'nl_tasks', 'nl_habits', 'nl_reports', 'nl_chat', 
+        'nl_chat_sessions', 'nl_active_session_id', 'nl_total_focus_hours'
+      ];
+
+      keysToSync.forEach(k => {
+        if (backupData[k] !== undefined) {
+          localStorage.setItem(`${k}_${displayName}`, JSON.stringify(backupData[k]));
+        }
+      });
+
+      const loadedSessions = getLocal('nl_chat_sessions', [], true, displayName);
+      let seededSessions = loadedSessions;
+      let seededActiveId = getLocal('nl_active_session_id', null, true, displayName);
+      const loadedChat = getLocal('nl_chat', [], true, displayName);
+
+      if (seededSessions.length === 0) {
+        const defaultSession = {
+          id: 'session-default',
+          title: 'Anti-Procrastination Welcome',
+          messages: loadedChat.length > 0 ? loadedChat : [
+            {
+              id: 'msg-1',
+              sender: 'coach' as const,
+              text: "Hi! I'm your friendly NeverLate AI Coach. There are so many ways we can interact! Whether you're completely new here or already know your way around, I can suggest optimal tools, help you manage tight deadlines, and guide you with focus strategies. How are you doing today?",
+              timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            }
+          ],
+          createdAt: new Date().toLocaleDateString()
+        };
+        seededSessions = [defaultSession];
+        seededActiveId = 'session-default';
+      }
+      if (seededSessions.length > 0 && !seededActiveId) {
+        seededActiveId = seededSessions[0].id;
+      }
+
+      set({ 
+        currentUser: user,
+        tasks: getLocal('nl_tasks', [], true, displayName),
+        habits: getLocal('nl_habits', [], true, displayName),
+        reports: getLocal('nl_reports', [], true, displayName),
+        chatHistory: loadedChat.length > 0 ? loadedChat : seededSessions[0].messages,
+        chatSessions: seededSessions,
+        activeSessionId: seededActiveId,
+        focusSession: {
+          ...get().focusSession,
+          totalFocusHours: getLocal('nl_total_focus_hours', 0, true, displayName)
+        },
+        isLoading: false
+      });
+      saveLocal('nl_user', user, false);
+
+      // Back up user details as well
+      fetch('/api/user/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, key: 'nl_user', data: user })
+      }).catch(err => console.warn('[NeverLate] Backup user details failed:', err));
+
+      const allUsers = getLocal('nl_all_users', [], false);
+      if (!allUsers.find((u: any) => u.email === email)) {
+        saveLocal('nl_all_users', [...allUsers, user], false);
+      }
     },
 
     login: (email, password) => {
-      const allUsers = getLocal('nl_all_users', []);
+      const allUsers = getLocal('nl_all_users', [], false);
       const storedUser = allUsers.find((u: any) => u.email === email && u.password === password);
       if (storedUser) {
+        const loadedSessions = getLocal('nl_chat_sessions', [], true, storedUser.displayName);
+        let seededSessions = loadedSessions;
+        let seededActiveId = getLocal('nl_active_session_id', null, true, storedUser.displayName);
+        const loadedChat = getLocal('nl_chat', [], true, storedUser.displayName);
+
+        if (seededSessions.length === 0) {
+          const defaultSession = {
+            id: 'session-default',
+            title: 'Anti-Procrastination Welcome',
+            messages: loadedChat.length > 0 ? loadedChat : [
+              {
+                id: 'msg-1',
+                sender: 'coach' as const,
+                text: "Hi! I'm your friendly NeverLate AI Coach. There are so many ways we can interact! Whether you're completely new here or already know your way around, I can suggest optimal tools, help you manage tight deadlines, and guide you with focus strategies. How are you doing today?",
+                timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+              }
+            ],
+            createdAt: new Date().toLocaleDateString()
+          };
+          seededSessions = [defaultSession];
+          seededActiveId = 'session-default';
+        }
+        if (seededSessions.length > 0 && !seededActiveId) {
+          seededActiveId = seededSessions[0].id;
+        }
+
         set({ 
           currentUser: storedUser,
-          tasks: getLocal('nl_tasks', []),
-          habits: getLocal('nl_habits', []),
-          reports: getLocal('nl_reports', []),
-          chatHistory: getLocal('nl_chat', []),
+          tasks: getLocal('nl_tasks', [], true, storedUser.displayName),
+          habits: getLocal('nl_habits', [], true, storedUser.displayName),
+          reports: getLocal('nl_reports', [], true, storedUser.displayName),
+          chatHistory: loadedChat.length > 0 ? loadedChat : seededSessions[0].messages,
+          chatSessions: seededSessions,
+          activeSessionId: seededActiveId,
           focusSession: {
             ...get().focusSession,
-            totalFocusHours: getLocal('nl_total_focus_hours', 0)
+            totalFocusHours: getLocal('nl_total_focus_hours', 0, true, storedUser.displayName)
           }
         });
-        saveLocal('nl_user', storedUser);
+        saveLocal('nl_user', storedUser, false);
         return true;
       }
       return false;
     },
 
     register: (email, name, password) => {
-      const allUsers = getLocal('nl_all_users', []);
+      const allUsers = getLocal('nl_all_users', [], false);
       if (allUsers.find((u: any) => u.email === email)) {
         return false;
       }
@@ -283,12 +422,29 @@ export const useAppStore = create<AppState>((set, get) => {
         level: 1,
         password
       };
+
+      const defaultSession = {
+        id: 'session-default',
+        title: 'Anti-Procrastination Welcome',
+        messages: [
+          {
+            id: 'msg-1',
+            sender: 'coach' as const,
+            text: "Hi! I'm your friendly NeverLate AI Coach. There are so many ways we can interact! Whether you're completely new here or already know your way around, I can suggest optimal tools, help you manage tight deadlines, and guide you with focus strategies. How are you doing today?",
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          }
+        ],
+        createdAt: new Date().toLocaleDateString()
+      };
+
       set({ 
         currentUser: user,
         tasks: [],
         habits: [],
         reports: [],
-        chatHistory: [],
+        chatHistory: defaultSession.messages,
+        chatSessions: [defaultSession],
+        activeSessionId: 'session-default',
         focusSession: {
             isActive: false,
             isPaused: false,
@@ -300,8 +456,18 @@ export const useAppStore = create<AppState>((set, get) => {
             focusedTaskId: null
         }
       });
-      saveLocal('nl_user', user);
-      saveLocal('nl_all_users', [...allUsers, user]);
+
+      saveLocal('nl_user', user, false);
+      saveLocal('nl_all_users', [...allUsers, user], false);
+      
+      saveLocal('nl_tasks', [], true);
+      saveLocal('nl_habits', [], true);
+      saveLocal('nl_reports', [], true);
+      saveLocal('nl_chat', defaultSession.messages, true);
+      saveLocal('nl_chat_sessions', [defaultSession], true);
+      saveLocal('nl_active_session_id', 'session-default', true);
+      saveLocal('nl_total_focus_hours', 0, true);
+
       return true;
     },
 
@@ -337,7 +503,7 @@ export const useAppStore = create<AppState>((set, get) => {
 
     toggleTheme: () => set((state) => {
       const nextTheme = state.theme === 'dark' ? 'light' : 'dark';
-      saveLocal('nl_theme', nextTheme);
+      saveLocal('nl_theme', nextTheme, false);
       return { theme: nextTheme };
     }),
 

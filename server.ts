@@ -2,9 +2,32 @@
 
 import express from 'express';
 import path from 'path';
+import fs from 'fs';
 import { createServer as createViteServer } from 'vite';
 import { GoogleGenAI } from '@google/genai';
 import dotenv from 'dotenv';
+
+const DB_PATH = path.join(process.cwd(), 'db_store.json');
+
+function readDb() {
+  try {
+    if (fs.existsSync(DB_PATH)) {
+      const data = fs.readFileSync(DB_PATH, 'utf8');
+      return JSON.parse(data);
+    }
+  } catch (err) {
+    console.error('[NeverLate] DB read failed:', err);
+  }
+  return {};
+}
+
+function writeDb(db: any) {
+  try {
+    fs.writeFileSync(DB_PATH, JSON.stringify(db, null, 2), 'utf8');
+  } catch (err) {
+    console.error('[NeverLate] DB write failed:', err);
+  }
+}
 
 dotenv.config();
 
@@ -52,6 +75,51 @@ async function startServer() {
       }
     });
   }
+
+  // ----------------- USER DATA BACKUP ENDPOINTS -----------------
+
+  // GET User Data (load full state for email)
+  app.get('/api/user/data', (req, res) => {
+    const { email } = req.query;
+    if (!email) {
+      return res.status(400).json({ error: 'Email parameter is required' });
+    }
+    const db = readDb();
+    const userData = db[String(email).toLowerCase()] || {};
+    res.json(userData);
+  });
+
+  // POST Save Key (back up a specific key-value pair for user email)
+  app.post('/api/user/save', (req, res) => {
+    const { email, key, data } = req.body;
+    if (!email || !key) {
+      return res.status(400).json({ error: 'Email and key are required' });
+    }
+    const db = readDb();
+    const userKey = String(email).toLowerCase();
+    if (!db[userKey]) {
+      db[userKey] = {};
+    }
+    db[userKey][key] = data;
+    writeDb(db);
+    res.json({ success: true });
+  });
+
+  // POST Save Entire State (for initial restore or full override)
+  app.post('/api/user/save-all', (req, res) => {
+    const { email, state } = req.body;
+    if (!email || !state) {
+      return res.status(400).json({ error: 'Email and state are required' });
+    }
+    const db = readDb();
+    const userKey = String(email).toLowerCase();
+    db[userKey] = {
+      ...(db[userKey] || {}),
+      ...state
+    };
+    writeDb(db);
+    res.json({ success: true });
+  });
 
   // ----------------- AI API ENDPOINTS -----------------
 

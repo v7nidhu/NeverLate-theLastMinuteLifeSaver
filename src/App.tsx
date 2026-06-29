@@ -168,6 +168,32 @@ export default function App() {
     }
   }, [currentUser]);
 
+  // Google Sign-In postMessage Event Listener
+  useEffect(() => {
+    const handleGoogleMessage = async (event: MessageEvent) => {
+      if (event.data && event.data.type === 'OAUTH_GOOGLE_SUCCESS') {
+        const { email, name, picture } = event.data;
+        await socialLogin(email, name, name.split(' ')[0], picture);
+        showCustomToast("Google Sign-In", `Welcome back, ${name}! Your cloud backup has been restored.`);
+        setShowGoogleModal(false);
+      }
+    };
+    window.addEventListener('message', handleGoogleMessage);
+    return () => window.removeEventListener('message', handleGoogleMessage);
+  }, [socialLogin]);
+
+  const handleGoogleSignInClick = () => {
+    const width = 450;
+    const height = 580;
+    const left = window.screenX + (window.outerWidth - width) / 2;
+    const top = window.screenY + (window.outerHeight - height) / 2;
+    window.open(
+      '/google-signin.html',
+      'GoogleSignIn',
+      `width=${width},height=${height},left=${left},top=${top},status=no,resizable=yes`
+    );
+  };
+
   // Auth States
   const [isAuthMode, setIsAuthMode] = useState<'login' | 'register'>('login');
   const [authView, setAuthView] = useState<'login' | 'register' | 'forgot' | 'forgot-sent'>('login');
@@ -1317,181 +1343,58 @@ export default function App() {
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className={`${themeDark ? 'bg-white/[0.035] border-white/10' : 'bg-white/80 border-gray-200'} border p-7 rounded-3xl w-full max-w-sm z-50 shadow-2xl backdrop-blur-2xl flex flex-col items-center text-center ${themeDark ? 'text-[#D7D0F8]' : 'text-gray-900'} relative`}
+              className={`${themeDark ? 'bg-[#0b071a]/95 border-purple-950/40 text-[#D7D0F8]' : 'bg-white border-purple-100 text-gray-900'} border p-8 rounded-3xl w-full max-w-sm z-50 shadow-2xl backdrop-blur-2xl flex flex-col items-center text-center relative`}
               style={{
-                boxShadow: themeDark ? 'inset 0 1px 0 rgba(255,255,255,0.08), 0 10px 50px rgba(0,0,0,0.6)' : '0 10px 25px rgba(0,0,0,0.1)'
+                boxShadow: themeDark ? 'inset 0 1px 0 rgba(255,255,255,0.08), 0 20px 50px rgba(0,0,0,0.6)' : '0 20px 40px rgba(122,87,248,0.05)'
               }}
             >
               {/* Decorative light leakage */}
               {themeDark && <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-48 h-48 bg-[#8E5FFF]/15 rounded-full blur-3xl pointer-events-none" />}
 
-              {/* Header Icon */}
-              <div className={`p-3 ${themeDark ? 'bg-white/[0.04] border-white/10' : 'bg-gray-100 border-gray-200'} rounded-2xl border mb-4 z-10 relative`}>
-                <LogIn className={`w-8 h-8 ${themeDark ? 'text-[#A970FF]' : 'text-purple-600'}`} />
+              {/* Multicolor Google 'G' Logo */}
+              <div className={`p-4 ${themeDark ? 'bg-white/[0.03] border-white/10' : 'bg-gray-50 border-gray-100'} rounded-2xl border mb-5 z-10 relative`}>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="32" height="32" className="animate-pulse">
+                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+                </svg>
               </div>
 
-              <h3 className={`text-lg font-extrabold tracking-tight ${themeDark ? 'text-white' : 'text-gray-900'} mb-1.5 z-10 relative`}>
-                {authView === 'forgot' ? 'Reset Password' : 'Welcome to NeverLate'}
+              <h3 className={`text-lg font-extrabold tracking-tight ${themeDark ? 'text-white' : 'text-[#2A1952]'} mb-2 z-10 relative`}>
+                Sign in with Google
               </h3>
-              {authView !== 'forgot' && (
-                <p className={`text-xs ${themeDark ? 'text-[#A89FC9]' : 'text-gray-600'} max-w-xs mb-6 z-10 relative`}>
-                  Sign in to customize your workspace, enable real-time schedules, and track productivity streaks.
-                </p>
-              )}
+              
+              <p className={`text-xs ${themeDark ? 'text-[#A89FC9]' : 'text-purple-950/70'} max-w-xs mb-6 z-10 relative leading-relaxed`}>
+                NeverLate connects with your Google Account to back up your tasks, deadlines, habits, and chat sessions securely in the cloud. Access your workspace from any device.
+              </p>
 
-              {authView !== 'forgot' && (
-                <div className={`flex w-full ${themeDark ? 'bg-[#090613]/50' : 'bg-gray-100'} rounded-xl p-1 mb-6 gap-2`}>
-                  <button
-                    className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${isAuthMode === 'login' ? 'bg-[#8E5FFF] text-white' : (themeDark ? 'text-[#D8B4FE]' : 'text-[#581C87]')}`}
-                    onClick={() => { setIsAuthMode('login'); setAuthView('login'); }}
-                  >
-                    Login
-                  </button>
-                  <button
-                    className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${isAuthMode === 'register' ? 'bg-[#8E5FFF] text-white' : (themeDark ? 'text-[#D8B4FE]' : 'text-[#581C87]')}`}
-                    onClick={() => { setIsAuthMode('register'); setAuthView('register'); }}
-                  >
-                    Register
-                  </button>
-                </div>
-              )}
-
-              {/* Form / Direct Sign-In block */}
+              {/* Direct Sign-In block */}
               <div className="w-full space-y-3 mb-6 z-10 relative">
-                {authView === 'forgot' ? (
-                    <div className="text-left">
-                        <p className="text-xs text-gray-400 mb-4">
-                            If you want to reset the password, then enter your registered email.
-                        </p>
-                        <input
-                            type="email"
-                            value={authEmail}
-                            onChange={(e: any) => setAuthEmail(e.target.value)}
-                            placeholder="Enter registered email"
-                            className={`w-full text-xs px-3.5 py-2.5 ${themeDark ? 'bg-[#090613]/80 border-white/10 text-white' : 'bg-white border-gray-200 text-gray-900'} border rounded-xl placeholder-gray-500 focus:outline-none focus:border-[#8E5FFF] transition-all`}
-                        />
-                        <button
-                            onClick={() => {
-                                // Add logic to show "Reset link sent" message
-                                setAuthView('forgot-sent');
-                            }}
-                            className="w-full py-2.5 mt-4 bg-gradient-to-r from-[#8E5FFF] to-[#A970FF] text-white font-bold rounded-xl text-xs"
-                        >
-                            Send Email
-                        </button>
-                    </div>
-                ) : authView === 'forgot-sent' ? (
-                    <div className="text-center">
-                        <p className="text-xs text-gray-400 mb-6">
-                            A reset password link has been sent to {authEmail} via email. Please check your inbox.
-                        </p>
-                        <button
-                            onClick={() => setAuthView('login')}
-                            className="w-full py-2.5 bg-gradient-to-r from-[#8E5FFF] to-[#A970FF] text-white font-bold rounded-xl text-xs"
-                        >
-                            Close
-                        </button>
-                    </div>
-                ) : (
-                    <>
-                        <div className="text-left">
-                          <label className="block text-[10px] font-bold text-[#A89FC9] uppercase tracking-wider mb-1">Enter email</label>
-                          <input
-                            type="email"
-                            value={authEmail}
-                            onChange={(e: any) => setAuthEmail(e.target.value)}
-                            autoComplete="off"
-                            placeholder="xyz@example.com"
-                            className={`w-full text-xs px-3.5 py-2.5 ${themeDark ? 'bg-[#090613]/80 border-white/10 text-white' : 'bg-white border-gray-200 text-gray-900'} border rounded-xl placeholder-gray-500 focus:outline-none focus:border-[#8E5FFF] transition-all`}
-                          />
-                        </div>
-
-                        <div className="text-left">
-                          <label className="block text-[10px] font-bold text-[#A89FC9] uppercase tracking-wider mb-1">
-                            {isAuthMode === 'register' ? 'Create password' : 'Enter password'}
-                          </label>
-                          <div className="relative">
-                            <input
-                                type={showPassword ? "text" : "password"}
-                                value={authPassword}
-                                autoComplete="off"
-                                onChange={(e: any) => {
-                                  setAuthPassword(e.target.value);
-                                  setPasswordError(null);
-                                  setLoginError(null);
-                                }}
-                                placeholder="••••••••"
-                                className={`w-full text-xs px-3.5 py-2.5 ${themeDark ? 'bg-[#090613]/80 border-white/10 text-white' : 'bg-white border-gray-200 text-gray-900'} border rounded-xl placeholder-gray-500 focus:outline-none focus:border-[#8E5FFF] transition-all`}
-                            />
-                            <button
-                                type="button"
-                                onClick={() => setShowPassword(!showPassword)}
-                                className="absolute right-3 top-2.5 text-[#A89FC9]"
-                            >
-                                {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                            </button>
-                          </div>
-                          {passwordError && <p className="text-[10px] text-red-500 mt-1">{passwordError}</p>}
-                          {loginError && <p className="text-[10px] text-red-500 mt-1">{loginError}</p>}
-                        </div>
-                        
-                        {isAuthMode === 'login' && (
-                          <button
-                            onClick={() => setAuthView('forgot')}
-                            className={`block text-[10px] ${themeDark ? 'text-[#A89FC9] hover:text-white' : 'text-gray-600 hover:text-gray-900'} mt-2 mx-auto`}
-                          >
-                            Forgot password?
-                          </button>
-                        )}
-                        
-                        {isAuthMode === 'register' && (
-                          <div className="flex gap-3 mt-2 mb-2">
-                              <div className={`flex items-center gap-1 ${passwordValid.eightChars ? 'text-green-500' : 'text-gray-500'}`}>
-                                  <input type="checkbox" checked={passwordValid.eightChars} readOnly className="accent-green-500" />
-                                  <span className="text-[10px]">min 8 characters</span>
-                              </div>
-                              <div className={`flex items-center gap-1 ${passwordValid.hasNumbers ? 'text-green-500' : 'text-gray-500'}`}>
-                                  <input type="checkbox" checked={passwordValid.hasNumbers} readOnly className="accent-green-500" />
-                                  <span className="text-[10px]">Numbers</span>
-                              </div>
-                              <div className={`flex items-center gap-1 ${passwordValid.hasAlphabets ? 'text-green-500' : 'text-gray-500'}`}>
-                                  <input type="checkbox" checked={passwordValid.hasAlphabets} readOnly className="accent-green-500" />
-                                  <span className="text-[10px]">Alphabets</span>
-                              </div>
-                          </div>
-                        )}
-
-                        <motion.button
-                          whileHover={{ scale: isRegisterDisabled ? 1 : 1.02 }}
-                          whileTap={{ scale: isRegisterDisabled ? 1 : 0.98 }}
-                          disabled={isAuthMode === 'register' && isRegisterDisabled}
-                          onClick={() => {
-                            if (isAuthMode === 'register') {
-                              if (!register(authEmail, authName || authEmail.split('@')[0], authPassword)) {
-                                  alert("This account already exists.");
-                                  return;
-                              }
-                            } else {
-                              if (!login(authEmail, authPassword)) {
-                                alert("Invalid credentials.");
-                                return;
-                              }
-                            }
-                            setShowGoogleModal(false);
-                            setAuthView('login');
-                          }}
-                          className={`w-full py-2.5 bg-gradient-to-r from-[#8E5FFF] to-[#A970FF] hover:from-[#A970FF] hover:to-[#CBB4FF] text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-[0_10px_30px_rgba(142,95,255,0.45)] cursor-pointer ${isAuthMode === 'register' && isRegisterDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
-                        >
-                          <LogIn className="w-4 h-4" />
-                          <span>{isAuthMode === 'register' ? 'Register & Enter' : 'Authenticate & Enter'}</span>
-                        </motion.button>
-                    </>
-                )}
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={handleGoogleSignInClick}
+                  className={`w-full py-3.5 ${
+                    themeDark 
+                      ? 'bg-[#8E5FFF] text-white hover:bg-[#7C4DFF]' 
+                      : 'bg-[#E9E3FF] text-black hover:bg-[#DCD4FF]'
+                  } font-bold rounded-xl text-xs flex items-center justify-center gap-2.5 shadow-lg cursor-pointer transition-colors duration-200`}
+                >
+                  {/* Miniature Google multi-colored G */}
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" className="bg-white p-0.5 rounded-full">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+                  </svg>
+                  <span>Continue with Google</span>
+                </motion.button>
               </div>
 
               <button
                 onClick={() => setShowGoogleModal(false)}
-                className={`w-full py-2.5 ${themeDark ? 'bg-white/[0.02] border-white/[0.08] text-[#A89FC9]' : 'bg-gray-200 border-gray-300 text-gray-800'} rounded-xl text-xs font-semibold cursor-pointer transition-all`}
+                className={`w-full py-2.5 ${themeDark ? 'bg-white/[0.04] border-white/[0.08] text-[#A89FC9] hover:bg-white/[0.08] hover:text-white' : 'bg-gray-100 border-gray-200 text-gray-700 hover:bg-gray-200'} rounded-xl text-xs font-semibold cursor-pointer transition-all`}
               >
                 Cancel
               </button>
